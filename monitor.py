@@ -31,10 +31,5 @@ def check_spo2_range(spo2):
     return True
 
 def vitals_ok(temperature, pulseRate, spo2):
-    if not check_temperature_range(temperature):
-        return False
-    if not check_pulse_rate_range(pulseRate):
-        return False
-    if not check_spo2_range(spo2):
-        return False
-    return True
+    checks = [check_temperature_range(temperature),check_pulse_rate_range(pulseRate),check_spo2_range(spo2)]
+    return all(checks)
