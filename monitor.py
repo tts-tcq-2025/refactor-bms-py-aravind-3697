@@ -27,12 +27,18 @@ def check_vital(name, value):
     return True, None
 
 def evaluate_vitals(vitals):
-    """Returns list of (ok, message) for each vital"""
-    results = []
+    """Return list of failed messages (empty if all good)."""
+    messages = []
     for name, value in vitals.items():
         ok, message = check_vital(name, value)
-        results.append((ok, message))
-    return results
+        if not ok:
+            messages.append(message)
+    return messages
+
+def process_alerts(messages, alert_fn):
+    if alert_fn:
+        for msg in messages:
+            alert_fn(msg)
 
 def vitals_ok(temperature, pulseRate, spo2, alert_fn=display_warning):
     vitals = {
@@ -40,13 +46,7 @@ def vitals_ok(temperature, pulseRate, spo2, alert_fn=display_warning):
         "pulse": pulseRate,
         "spo2": spo2
     }
-
-    results = evaluate_vitals(vitals)
-    all_ok = all(ok for ok, _ in results)
-
-    if alert_fn:
-        for ok, message in results:
-            if not ok:
-                alert_fn(message)
-    return all_ok
+    failed_messages = evaluate_vitals(vitals)
+    process_alerts(failed_messages, alert_fn)
+    return len(failed_messages) == 0
 
