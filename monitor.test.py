@@ -2,7 +2,7 @@ import unittest
 from monitor import vitals_ok
 
 def dummy_alert(msg):
-    pass  # replaces display_warning during testing
+    pass  
 
 class MonitorTest(unittest.TestCase):
     def test_temperature_out_of_range(self):
@@ -32,4 +32,5 @@ class MonitorTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
 
