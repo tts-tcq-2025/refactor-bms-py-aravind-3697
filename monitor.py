@@ -1,4 +1,3 @@
-
 from time import sleep
 import sys
 
@@ -27,6 +26,14 @@ def check_vital(name, value):
         return False, limits["message"]
     return True, None
 
+def evaluate_vitals(vitals):
+    """Returns list of (ok, message) for each vital"""
+    results = []
+    for name, value in vitals.items():
+        ok, message = check_vital(name, value)
+        results.append((ok, message))
+    return results
+
 def vitals_ok(temperature, pulseRate, spo2, alert_fn=display_warning):
     vitals = {
         "temperature": temperature,
@@ -34,12 +41,12 @@ def vitals_ok(temperature, pulseRate, spo2, alert_fn=display_warning):
         "spo2": spo2
     }
 
-    all_ok = True
-    for name, value in vitals.items():
-        ok, message = check_vital(name, value)
-        if not ok:
-            all_ok = False
-            if alert_fn:  # decoupled → can be mocked in tests
+    results = evaluate_vitals(vitals)
+    all_ok = all(ok for ok, _ in results)
+
+    if alert_fn:
+        for ok, message in results:
+            if not ok:
                 alert_fn(message)
     return all_ok
 
