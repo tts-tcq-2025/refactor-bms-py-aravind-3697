@@ -12,24 +12,34 @@ def display_warning(message):
         sys.stdout.flush()
         sleep(1)
 
-def check_temperature_range(temperature):
-    if temperature > 102 or temperature < 95:
-        display_warning('Temperature critical!')
-        return False
-    return True
+def is_within_range(value, low, high):
+    return low <= value <= high
 
-def check_pulse_rate_range(pulseRate):
-    if pulseRate < 60 or pulseRate > 100:
-        display_warning('Pulse Rate is out of range!')
-        return False
-    return True
+VITAL_LIMITS = {
+    "temperature": {"low": 95, "high": 102, "message": "Temperature critical!"},
+    "pulse": {"low": 60, "high": 100, "message": "Pulse Rate is out of range!"},
+    "spo2": {"low": 90, "high": 100, "message": "Oxygen Saturation out of range!"}
+}
 
-def check_spo2_range(spo2):
-    if spo2 < 90:
-        display_warning('Oxygen Saturation out of range!')
-        return False
-    return True
+def check_vital(name, value):
+    limits = VITAL_LIMITS[name]
+    if not is_within_range(value, limits["low"], limits["high"]):
+        return False, limits["message"]
+    return True, None
 
-def vitals_ok(temperature, pulseRate, spo2):
-    checks = [check_temperature_range(temperature),check_pulse_rate_range(pulseRate),check_spo2_range(spo2)]
-    return all(checks)
+def vitals_ok(temperature, pulseRate, spo2, alert_fn=display_warning):
+    vitals = {
+        "temperature": temperature,
+        "pulse": pulseRate,
+        "spo2": spo2
+    }
+
+    all_ok = True
+    for name, value in vitals.items():
+        ok, message = check_vital(name, value)
+        if not ok:
+            all_ok = False
+            if alert_fn:  # decoupled → can be mocked in tests
+                alert_fn(message)
+    return all_ok
+
